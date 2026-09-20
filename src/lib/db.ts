@@ -23,7 +23,21 @@ const pool = connectionString
 // POSTGRES_URL is set, this switches to real Postgres with no code changes.
 const usingPostgres = pool !== null;
 
+// On Vercel the filesystem is read-only outside /tmp, so the local JSON
+// fallback can't work there -- it would just crash. Fail with a clear,
+// actionable message instead of a raw filesystem error.
+const isVercel = Boolean(process.env.VERCEL);
+
+function assertConfigured(): void {
+  if (!usingPostgres && isVercel) {
+    throw new Error(
+      "No database is connected yet. In the Vercel dashboard, go to Storage -> Create Database -> Postgres, link it to this project, then run db/schema.sql once against it."
+    );
+  }
+}
+
 export async function listTickets(): Promise<ChecklistTicket[]> {
+  assertConfigured();
   if (!usingPostgres) {
     return localStore.listTickets();
   }
@@ -39,6 +53,7 @@ export async function createTicket(
   startTime: string,
   endTime: string
 ): Promise<ChecklistTicket> {
+  assertConfigured();
   if (!usingPostgres) {
     return localStore.createTicket(tab, title, startTime, endTime);
   }
@@ -55,6 +70,7 @@ export async function updateTicketStatus(
   id: string,
   status: ChecklistTicketStatus
 ): Promise<ChecklistTicket> {
+  assertConfigured();
   if (!usingPostgres) {
     return localStore.updateTicketStatus(id, status);
   }
@@ -76,6 +92,7 @@ export async function updateTicketPosition(
   id: string,
   position: number
 ): Promise<ChecklistTicket> {
+  assertConfigured();
   if (!usingPostgres) {
     return localStore.updateTicketPosition(id, position);
   }
@@ -93,6 +110,7 @@ export async function updateTicketPosition(
 }
 
 export async function deleteTicket(id: string): Promise<void> {
+  assertConfigured();
   if (!usingPostgres) {
     return localStore.deleteTicket(id);
   }
