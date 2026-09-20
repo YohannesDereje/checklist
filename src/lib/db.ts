@@ -6,7 +6,10 @@ import type {
 } from "@/types/checklistTicket";
 import * as localStore from "@/lib/localStore";
 
-const connectionString = process.env.POSTGRES_URL;
+// Different Postgres providers in Vercel's Storage marketplace name their
+// connection string env var differently (native Vercel Postgres uses
+// POSTGRES_URL, Neon's own integration uses DATABASE_URL) -- accept either.
+const connectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
 
 const pool = connectionString
   ? new Pool({
@@ -17,10 +20,11 @@ const pool = connectionString
     })
   : null;
 
-// No POSTGRES_URL set yet (no Postgres database linked in Vercel/local .env.local):
-// fall back to a JSON-file-backed store under .data/ so the app is fully usable
-// for local development and preview before a real database exists. Once
-// POSTGRES_URL is set, this switches to real Postgres with no code changes.
+// No connection string set yet (no Postgres database linked in
+// Vercel/local .env.local): fall back to a JSON-file-backed store under
+// .data/ so the app is fully usable for local development and preview
+// before a real database exists. Once POSTGRES_URL or DATABASE_URL is set,
+// this switches to real Postgres with no code changes.
 const usingPostgres = pool !== null;
 
 // On Vercel the filesystem is read-only outside /tmp, so the local JSON

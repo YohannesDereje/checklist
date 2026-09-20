@@ -14,10 +14,10 @@ npm run dev
 
 Open http://localhost:3000.
 
-**No database setup required to try it.** If `POSTGRES_URL` isn't set, the
-app automatically stores tickets in a local JSON file at `.data/tickets.json`
-(gitignored) so you can use the full board right away. Nothing here talks to
-a real database until you add one.
+**No database setup required to try it.** If no connection string is set,
+the app automatically stores tickets in a local JSON file at
+`.data/tickets.json` (gitignored) so you can use the full board right away.
+Nothing here talks to a real database until you add one.
 
 ## Adding a real (shared) database
 
@@ -26,19 +26,20 @@ database:
 
 1. In your Vercel project dashboard, go to **Storage** → create a Postgres
    database (via Neon, or any Postgres provider in the Marketplace) and
-   connect it to this project. Vercel will add a `POSTGRES_URL` environment
-   variable automatically.
+   connect it to this project. Vercel will add a connection string
+   environment variable automatically — the exact name depends on the
+   provider (native Vercel Postgres uses `POSTGRES_URL`, Neon's own
+   integration uses `DATABASE_URL`). The app checks for either, so whichever
+   one shows up in your project's Environment Variables tab works with no
+   code changes.
 2. Open that database's **Query** tab (or connect with any Postgres client)
    and run the contents of [`db/schema.sql`](db/schema.sql) once.
-3. For local development against the same database, copy the connection
-   string into `.env.local`:
+3. For local development against the same database, copy whichever
+   connection string variable Vercel added into `.env.local`, e.g.:
 
    ```
-   POSTGRES_URL=your-connection-string-here
+   DATABASE_URL=your-connection-string-here
    ```
-
-Once `POSTGRES_URL` is set (locally or in Vercel), the app uses it instead
-of the local JSON fallback automatically — no code changes needed.
 
 ## Deploying
 
